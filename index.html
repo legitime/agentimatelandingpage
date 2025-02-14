@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentimate - The agent who animates your ideas</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+    <style>
+        :root {
+            --primary-color: #FF6B6B;
+            --gradient-start: #ff71ce;
+            --gradient-end: #01cdfe;
+            font-size: 16px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: #000;
+            color: white;
+            min-height: 100vh;
+            display: block;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .nav-links a:hover {
+            opacity: 1;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4rem 2rem 2rem;
+            position: relative;
+            background: #000;
+            margin: 0;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin: 0 0 1rem;
+            line-height: 1.2;
+            color: #fff;
+            max-width: 900px;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0 0 3rem;
+            font-weight: 400;
+        }
+
+        .cta-button {
+            background: #FF1B7B;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2.5rem;
+            border-radius: 100px;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: transform 0.3s, background 0.3s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(255, 27, 123, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            background: #FF338C;
+        }
+
+        .command-container {
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+            margin-top: 0;
+        }
+
+        .command-input {
+            background: rgba(35, 37, 40, 0.95);
+            border-radius: 16px;
+            padding: 1rem 1.5rem;
+            color: white;
+            font-family: 'Inter', monospace;
+            font-size: 1.1rem;
+            width: 100%;
+            border: none;
+            margin-bottom: 1.5rem;
+            box-sizing: border-box;
+            position: relative;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .command-prefix {
+            color: var(--gradient-start);
+            margin-right: 0.8rem;
+            font-weight: 500;
+        }
+
+        .command-text {
+            position: relative;
+            opacity: 0.9;
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+            letter-spacing: 0.5px;
+            word-spacing: 4px;
+        }
+
+        .command-text span {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            margin-right: 1px;
+        }
+
+        .command-text span.space {
+            margin-right: 8px;
+        }
+
+        .command-text span.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .command-cursor {
+            position: absolute;
+            right: -4px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2px;
+            height: 1.2em;
+            background: var(--gradient-end);
+            animation: blink 1s infinite;
+        }
+
+        .suggestions {
+            display: none;
+        }
+
+        .preview-area {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, rgba(40, 0, 60, 0.8), rgba(0, 20, 40, 0.8));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .preview-component {
+            position: relative;
+            width: 300px;
+            aspect-ratio: 16/9;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border-radius: 12px;
+            box-shadow: 
+                0 10px 30px rgba(0,0,0,0.2),
+                inset 0 1px 1px rgba(255,255,255,0.1);
+            padding: 20px;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .preview-component.gradient {
+            background: linear-gradient(90deg, #000000, #0066ff);
+            background-size: 200% 100%;
+            animation: gradient-shift 2s infinite;
+            box-shadow: 
+                0 0 30px rgba(0, 102, 255, 0.3),
+                inset 0 1px 1px rgba(255,255,255,0.2);
+        }
+
+        .preview-component.hover {
+            animation: 
+                float 3s ease-in-out infinite,
+                pulse 2s ease-in-out infinite,
+                rotate 8s linear infinite;
+        }
+
+        .preview-component.expand {
+            animation: expand 2s infinite;
+            background: linear-gradient(90deg, #000000, #1a1a1a);
+        }
+
+        .preview-component.pulse {
+            animation: pulse-glow 1.5s infinite;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+        }
+
+        .preview-component.assemble {
+            animation: none;
+            background: transparent;
+            box-shadow: none;
+            overflow: visible;
+        }
+
+        .assembly-part {
+            position: absolute;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translate(var(--tx, 0), var(--ty, 0)) rotate(var(--rot, 0deg)) scale(var(--scale, 1));
+        }
+
+        .part-1 {
+            width: 60%;
+            height: 40%;
+            top: 10%;
+            left: 20%;
+        }
+
+        .part-2 {
+            width: 40%;
+            height: 20%;
+            bottom: 20%;
+            left: 10%;
+        }
+
+        .part-3 {
+            width: 30%;
+            height: 30%;
+            bottom: 15%;
+            right: 15%;
+        }
+
+        .preview-component.assemble .assembly-part {
+            animation: assemble-part 2s forwards;
+        }
+
+        .preview-component.assemble .part-1 {
+            --tx: -100px;
+            --ty: -50px;
+            --rot: -45deg;
+            animation-delay: 0s;
+        }
+
+        .preview-component.assemble .part-2 {
+            --tx: 100px;
+            --ty: 50px;
+            --rot: 45deg;
+            animation-delay: 0.3s;
+        }
+
+        .preview-component.assemble .part-3 {
+            --tx: 50px;
+            --ty: -100px;
+            --rot: 90deg;
+            animation-delay: 0.6s;
+        }
+
+        .preview-component:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.3),
+                0 0 60px rgba(79, 195, 247, 0.5);
+        }
+
+        .preview-component.bounce {
+            animation: bounce 2s infinite;
+        }
+
+        .preview-component.spin {
+            animation: spin 3s infinite;
+        }
+
+        .preview-component.shake {
+            animation: shake 0.5s infinite;
+        }
+
+        .preview-component.glitch {
+            animation: glitch 1s infinite;
+        }
+
+        .component-detail {
+            position: absolute;
+            background: rgba(0, 200, 255, 0.1);
+            border: 1px solid rgba(0, 200, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .detail-1 {
+            top: 15%;
+            left: 10%;
+            width: 40%;
+            height: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .detail-2 {
+            top: 35%;
+            right: 10%;
+            width: 30%;
+            height: 8px;
+            animation: pulse 2s infinite 0.5s;
+        }
+
+        .detail-3 {
+            bottom: 25%;
+            left: 20%;
+            width: 60%;
+            height: 8px;
+            animation: pulse 2s infinite 1s;
+        }
+
+        .component-led {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #00ff88;
+            top: 15px;
+            right: 15px;
+            box-shadow: 0 0 10px #00ff88;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.3; }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .animation-object {
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .animation-object.diamond {
+            width: 100px;
+            height: 100px;
+            transform: rotate(45deg);
+            border: 2px solid var(--gradient-start);
+            animation: pulse 2s infinite;
+        }
+
+        .animation-object.diamond::before {
+            content: '...';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            color: var(--gradient-start);
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+        }
+
+        .gradient-animation {
+            background: linear-gradient(135deg, #000, #0066ff);
+            background-size: 200% 200%;
+            animation: gradientMove 3s infinite;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(3deg);
+            }
+            75% {
+                transform: rotate(-3deg);
+            }
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        .background-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            transform-origin: center;
+        }
+
+        @keyframes bounce {
+            0%, 100% { 
+                transform: translateY(0) scale(1);
+            }
+            50% { 
+                transform: translateY(-20px) scale(0.95);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes stretch {
+            0%, 100% { 
+                transform: scale(1, 1);
+            }
+            30% { 
+                transform: scale(1.1, 0.9);
+            }
+            60% { 
+                transform: scale(0.9, 1.1);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 
+                    0 10px 30px rgba(0,0,0,0.2),
+                    0 0 20px rgba(79, 195, 247, 0.3);
+            }
+            50% {
+                box-shadow: 
+                    0 15px 40px rgba(0,0,0,0.3),
+                    0 0 40px rgba(79, 195, 247, 0.6);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @keyframes glitch {
+            0% { transform: skew(0deg); }
+            20% { transform: skew(-10deg); }
+            40% { transform: skew(10deg); }
+            60% { transform: skew(-5deg); }
+            80% { transform: skew(5deg); }
+            100% { transform: skew(0deg); }
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(0, 102, 255, 0.2);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 50px rgba(0, 102, 255, 0.4);
+            }
+        }
+
+        @keyframes assemble-part {
+            0% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(calc(var(--tx) * 0.5), calc(var(--ty) * 0.5)) rotate(calc(var(--rot) * 0.5)) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(0deg) scale(1);
+            }
+        }
+
+        .showcase-section {
+            min-height: 50vh;
+            width: 100%;
+            display: grid;
+            place-items: center;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .animation-wrapper {
+            width: 100vw;
+            height: 50vh;
+            display: grid;
+            place-items: center;
+            position: relative;
+        }
+
+        .particles-container {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            display: grid;
+            place-items: center;
+            margin-top: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #4fc3f7;
+            border-radius: 50%;
+            transform-origin: center;
+            will-change: transform;
+            filter: blur(2px);
+            box-shadow: 
+                0 0 8px rgba(79, 195, 247, 0.8),
+                0 0 16px rgba(79, 195, 247, 0.4);
+        }
+
+        .mac-window {
+            position: absolute;
+            width: 500px;
+            height: 320px;
+            background: rgba(28, 28, 30, 0.95);
+            border-radius: 16px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                0 0 40px rgba(79, 195, 247, 0.4),
+                inset 0 0 2px rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transform: scale(0.8);
+            backdrop-filter: blur(20px);
+            z-index: 10;
+            transition: box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .window-header {
+            height: 40px;
+            background: rgba(40, 40, 42, 0.95);
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .window-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .window-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .button-close { background: #ff5f57; }
+        .button-minimize { background: #febc2e; }
+        .button-expand { background: #28c840; }
+
+        .window-content {
+            padding: 2rem;
+            color: #fff;
+            opacity: 0;
+        }
+
+        .window-content h2 {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #4fc3f7, #00796b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(79, 195, 247, 0.3);
+        }
+
+        .window-content p {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .website-section {
+            position: absolute;
+            width: 800px;
+            height: 120px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: #ff1744;
+            border-radius: 8px;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(255, 23, 68, 0.3);
+        }
+
+        .website-section h2 {
+            color: white;
+            font-size: 2.5rem;
+            margin: 0 0 1rem;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .website-section p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .showcase-label {
+            font-size: 1.2rem;
+            color: #fff;
+            opacity: 0.8;
+            text-align: center;
+        }
+
+        html {
+            scroll-snap-type: y proximity;
+            scroll-behavior: smooth;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .section-separator {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.01), 
+                rgba(255, 255, 255, 0.1), 
+                rgba(255, 255, 255, 0.01));
+            margin: 4rem 0;
+        }
+
+        .testimonials-section {
+            padding: 6rem 2rem;
+            background: #000;
+            color: white;
+            text-align: center;
+        }
+
+        .testimonials-section h2 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 4rem;
+            background: linear-gradient(135deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .testimonial-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .testimonial-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1.5rem;
+        }
+
+        .testimonial-author {
+            font-size: 0.9rem;
+            color: var(--gradient-start);
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .testimonials-section h2 {
+                font-size: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .testimonial-card {
+                padding: 1.5rem;
+            }
+        }
+
+        .footer {
+            background: #000;
+            padding: 4rem 2rem;
+            color: white;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 4rem;
+        }
+
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .footer-logo span {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .footer-column h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: white;
+            transform: translateX(5px);
+        }
+
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        .lifework-section {
+            min-height: 80vh;
+            width: 100%;
+            display: grid;
+            place-items: center;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            padding: 4rem 0;
+        }
+
+        .lifework-section .animation-wrapper {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            position: relative;
+        }
+
+        .lifework-section .particles-container {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            display: grid;
+            place-items: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">agentimate</a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#about">About</a>
+        </div>
+    </nav>
+
+    <div class="background-shapes">
+        <!-- Shapes will be dynamically added here -->
+    </div>
+
+    <main class="hero">
+        <h1>Idea to design in seconds.</h1>
+        <p>Agentimate is your AI agent who animates.</p>
+        <div class="command-container">
+            <div class="command-input">
+                <span class="command-prefix">></span>
+                <div class="command-text">Make it hover...</div>
+                <div class="command-cursor"></div>
+            </div>
+            <div class="preview-area">
+                <div class="preview-component">
+                    <div class="component-led"></div>
+                    <div class="component-detail detail-1"></div>
+                    <div class="component-detail detail-2"></div>
+                    <div class="component-detail detail-3"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="section-separator"></div>
+
+    <section class="lifework-section">
+        <div class="animation-wrapper">
+            <div class="particles-container"></div>
+        </div>
+    </section>
+
+    <div class="section-separator"></div>
+
+    <section class="testimonials-section">
+        <h2>Loved by thousands of product creators</h2>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <p class="testimonial-text">"I absolutely LOVE your product! It is the single best thing that I experienced and found! ChatGPT! The value that you create with this is just over the top mind-blowing as it basically replaces or enhances a ton of SaaS-Solutions in an instant."</p>
+                <div class="testimonial-author">Thomas</div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"Lovable empowers me to create frontends that surpass my own technical limitations. It allows me to swiftly develop prototypes to showcase to clients, without the need for generic templates or starting from scratch. Essentially, it enables me to concentrate on the backend while GPT Engineer efficiently generates a functional and visually appealing frontend my clients will love."</p>
+                <div class="testimonial-author">Marius - Veloforce</div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"Of all the products that I've tried, the services, the software your guys was the one that was legit & true to its word with no fuck around, shady subscription and/or code stacks, which I really really like and I totally understand you guys are an alpha and the apps are simple but it's light years ahead in my opinion and experience!!"</p>
+                <div class="testimonial-author">Patrick S.</div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"Lovable is hands down the best tool I've ever used. It's like a super senior dev who shares his tricks with you. For the first time, I can build apps without the headache. It's so much fun to use and gets me results in a heartbeat. Love it!"</p>
+                <div class="testimonial-author">Karin</div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"Hi Anton, I just wanted to drop you a quick note to say how amazing Lovable is. I'm truly impressed by its quality, accuracy, speed, and how easy it is to use. It's a standout compared to anything else out there, and I'm genuinely excited to keep using it and see how it develops. Thank you so much for giving me the chance to use it during the Alpha stage - I feel really lucky to have this opportunity!"</p>
+                <div class="testimonial-author">Ray B.</div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"I tried Lovable yesterday, and it was amazing. I had to build a showcase for our own AI model. One prompt was enough to get a solid UI, and after a few iterations it was connected to our API."</p>
+                <div class="testimonial-author">Daniel</div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"I'm always amazed at how fast we can whip up a UI with Lovable. It gives me a solid base that I can easily tweak and build on. Plus, using it to integrate it with the backend is magical!"</p>
+                <div class="testimonial-author">Martin - Platanus</div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"It is freaking astonishing! Wow, just wow!"</p>
+                <div class="testimonial-author">Rasmus J.</div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"I can get rid of my developers, and save thousands of dollars"</p>
+                <div class="testimonial-author">Kate</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-separator"></div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <a href="/" class="footer-logo">
+                    <span>agentimate</span>
+                </a>
+                <div class="social-links">
+                    <a href="#" class="social-link">
+                        <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                            <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-link">
+                        <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-link">
+                        <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.815 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h3>Product</h3>
+                <div class="footer-links">
+                    <a href="#about">About</a>
+                    <a href="#news">News</a>
+                    <a href="#hire">Hire a Partner</a>
+                    <a href="#partner">Become a Partner</a>
+                    <a href="#roadmap">Roadmap</a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h3>Resources</h3>
+                <div class="footer-links">
+                    <a href="#hall-of-fame">Builder Hall of Fame</a>
+                    <a href="#learn">Learn</a>
+                    <a href="#integrations">Integrations</a>
+                    <a href="#affiliates">Affiliates</a>
+                    <a href="#support">Support</a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h3>Legal</h3>
+                <div class="footer-links">
+                    <a href="#privacy">Privacy Policy</a>
+                    <a href="#terms">Terms & Conditions</a>
+                    <a href="#report">Report Abuse</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        import anime from 'https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.es.js';
+
+        // Setup showcase animation
+        const container = document.querySelector('.particles-container');
+        const numberOfParticles = 300;
+        const gridSize = Math.sqrt(numberOfParticles);
+        const spacing = 2;
+
+        // Create Mac window
+        const macWindow = document.createElement('div');
+        macWindow.className = 'mac-window';
+        macWindow.innerHTML = `
+            <div class="window-header">
+                <div class="window-buttons">
+                    <div class="window-button button-close"></div>
+                    <div class="window-button button-minimize"></div>
+                    <div class="window-button button-expand"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <h2>Your Life's Work</h2>
+                <p>Transform your ideas into reality with powerful animations.</p>
+            </div>
+        `;
+        container.appendChild(macWindow);
+
+        // Create particles in a tight grid
+        for (let i = 0; i < numberOfParticles; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            const row = Math.floor(i / gridSize);
+            const col = i % gridSize;
+            const x = (col - gridSize/2) * spacing;
+            const y = (row - gridSize/2) * spacing;
+            
+            particle.style.transform = `translate(${x}px, ${y}px)`;
+            container.appendChild(particle);
+        }
+
+        function resetParticles() {
+            anime.set('.particle', {
+                translateX: (el, i) => {
+                    const col = i % gridSize;
+                    return (col - gridSize/2) * spacing;
+                },
+                translateY: (el, i) => {
+                    const row = Math.floor(i / gridSize);
+                    return (row - gridSize/2) * spacing;
+                },
+                translateZ: 0,
+                scale: 1,
+                opacity: 1,
+                duration: 0
+            });
+        }
+
+        const timeline = anime.timeline({
+            loop: true,
+            autoplay: true,
+            direction: 'normal',
+            complete: resetParticles
+        });
+
+        timeline
+        // Initial burst
+        .add({
+            targets: '.particle',
+            scale: [0, 1],
+            opacity: [0, 1],
+            duration: 300,
+            delay: anime.stagger(1, {
+                grid: [gridSize, gridSize],
+                from: 'center'
+            }),
+            easing: 'easeOutExpo'
+        })
+        // Explosion effect
+        .add({
+            targets: '.particle',
+            translateX: () => anime.random(-75, 75),
+            translateY: () => anime.random(-75, 75),
+            translateZ: () => anime.random(-50, 50),
+            rotateZ: () => anime.random(-90, 90),
+            scale: [
+                {value: 2, duration: 300, easing: 'easeOutExpo'},
+                {value: 0, duration: 300, easing: 'easeInExpo'}
+            ],
+            opacity: {
+                value: [1, 0],
+                duration: 600,
+                easing: 'easeInExpo'
+            },
+            duration: 600,
+            delay: anime.stagger(1, {
+                grid: [gridSize, gridSize],
+                from: 'center'
+            }),
+            easing: 'easeOutExpo'
+        })
+        // Window appearance
+        .add({
+            targets: '.mac-window',
+            opacity: [0, 1],
+            scale: [0.2, 1],
+            rotateX: [30, 0],
+            duration: 800,
+            easing: 'easeOutElastic(1, 0.5)',
+            offset: '-=400'
+        })
+        // Content appearance
+        .add({
+            targets: '.window-content',
+            opacity: [0, 1],
+            translateY: [20, 0],
+            duration: 600,
+            easing: 'easeOutExpo',
+            offset: '-=400'
+        })
+        // Window glow effect
+        .add({
+            targets: '.mac-window',
+            scale: [1, 1.02, 1],
+            boxShadow: [
+                { value: '0 25px 50px rgba(0,0,0,0.5), 0 0 40px rgba(79,195,247,0.4)' },
+                { value: '0 25px 50px rgba(0,0,0,0.5), 0 0 100px rgba(79,195,247,0.8)' },
+                { value: '0 25px 50px rgba(0,0,0,0.5), 0 0 40px rgba(79,195,247,0.4)' }
+            ],
+            duration: 2000,
+            easing: 'easeInOutSine'
+        })
+        // Window fade out
+        .add({
+            targets: ['.mac-window', '.window-content'],
+            opacity: 0,
+            scale: 0.2,
+            duration: 600,
+            easing: 'easeInExpo',
+            delay: 1000
+        });
+
+        // Start the animation
+        timeline.play();
+
+        // Update the JavaScript to add the hover class
+        document.querySelector('.preview-component').classList.add('hover');
+
+        // Add this to the existing script section
+        const previewComponent = document.querySelector('.preview-component');
+        const details = document.querySelectorAll('.component-detail');
+
+        function applyRandomTransform() {
+            const transforms = [
+                'rotateX(360deg)',
+                'rotateY(360deg)',
+                'scale(1.2, 0.8)',
+                'scale(0.8, 1.2)',
+                'skew(10deg, 10deg)',
+                'translateZ(50px)'
+            ];
+            return transforms[Math.floor(Math.random() * transforms.length)];
+        }
+
+        function createKeyframes() {
+            return `
+                @keyframes complexAnimation {
+                    0% { transform: translate(0) rotate(0) scale(1); filter: hue-rotate(0deg); }
+                    25% { transform: translate(10px, -10px) rotate(5deg) scale(1.1); filter: hue-rotate(90deg); }
+                    50% { transform: translate(0, -20px) ${applyRandomTransform()} scale(0.95); filter: hue-rotate(180deg); }
+                    75% { transform: translate(-10px, -10px) rotate(-5deg) scale(1.05); filter: hue-rotate(270deg); }
+                    100% { transform: translate(0) rotate(0) scale(1); filter: hue-rotate(360deg); }
+                }
+            `;
+        }
+
+        function updateAnimation() {
+            // Remove old style element if it exists
+            const oldStyle = document.getElementById('dynamic-animation');
+            if (oldStyle) oldStyle.remove();
+
+            // Create new style element with fresh keyframes
+            const style = document.createElement('style');
+            style.id = 'dynamic-animation';
+            style.textContent = createKeyframes();
+            document.head.appendChild(style);
+
+            // Apply the animation
+            previewComponent.style.animation = `
+                complexAnimation 3s infinite cubic-bezier(0.4, 0, 0.2, 1),
+                glow 2s infinite alternate
+            `;
+
+            // Add glowing effect
+            previewComponent.style.boxShadow = `
+                0 0 30px rgba(79, 195, 247, 0.3),
+                0 0 60px rgba(79, 195, 247, 0.2),
+                inset 0 0 20px rgba(79, 195, 247, 0.2)
+            `;
+
+            // Animate details
+            details.forEach((detail, index) => {
+                detail.style.animation = `
+                    pulse 1.5s infinite ${index * 0.2}s,
+                    glow 2s infinite ${index * 0.3}s alternate
+                `;
+            });
+        }
+
+        // Initial animation
+        updateAnimation();
+
+        // Update animation periodically
+        setInterval(updateAnimation, 3000);
+
+        // Add hover effect
+        previewComponent.addEventListener('mouseover', () => {
+            previewComponent.style.transform = 'scale(1.1) rotate(5deg)';
+            previewComponent.style.boxShadow = `
+                0 0 50px rgba(79, 195, 247, 0.5),
+                0 0 100px rgba(79, 195, 247, 0.3),
+                inset 0 0 30px rgba(79, 195, 247, 0.3)
+            `;
+        });
+
+        previewComponent.addEventListener('mouseout', () => {
+            previewComponent.style.transform = '';
+            updateAnimation();
+        });
+
+        // Add click interaction
+        previewComponent.addEventListener('click', () => {
+            previewComponent.style.animation = 'none';
+            setTimeout(() => {
+                previewComponent.style.animation = `
+                    complexAnimation 3s infinite cubic-bezier(0.4, 0, 0.2, 1),
+                    glow 2s infinite alternate
+                `;
+            }, 50);
+        });
+
+        // Add new command cycling functionality
+        const commands = [
+            "Make it hover...",
+            "Make it stretch...",
+            "Make it spin...",
+            "Make it bounce...",
+            "Make it glow...",
+            "Make it pulse...",
+            "Make it flip...",
+            "Make it shake..."
+        ];
+
+        const animations = {
+            hover: {
+                keyframes: [
+                    { transform: 'translateY(0)' },
+                    { transform: 'translateY(-20px)' },
+                    { transform: 'translateY(-20px)' },
+                    { transform: 'translateY(0)' }
+                ],
+                options: { 
+                    duration: 2000,
+                    easing: 'easeInOutQuad',
+                    loop: true
+                }
+            },
+            stretch: {
+                keyframes: [
+                    { transform: 'scale(1, 1)' },
+                    { transform: 'scale(1.3, 0.7)' },
+                    { transform: 'scale(0.8, 1.3)' },
+                    { transform: 'scale(1, 1)' }
+                ],
+                options: { 
+                    duration: 2000,
+                    easing: 'easeInOutElastic(1, .5)',
+                    loop: true
+                }
+            },
+            spin: {
+                keyframes: [
+                    { transform: 'rotate(0deg)' },
+                    { transform: 'rotate(360deg)' }
+                ],
+                options: { 
+                    duration: 2000,
+                    easing: 'easeInOutQuad',
+                    loop: true
+                }
+            },
+            bounce: {
+                keyframes: [
+                    { transform: 'translateY(0)', easing: 'easeOutQuad' },
+                    { transform: 'translateY(-30px)', easing: 'easeOutQuad' },
+                    { transform: 'translateY(0)', easing: 'easeInQuad' },
+                    { transform: 'translateY(-15px)', easing: 'easeOutQuad' },
+                    { transform: 'translateY(0)', easing: 'easeInQuad' }
+                ],
+                options: { 
+                    duration: 1500,
+                    loop: true
+                }
+            },
+            glow: {
+                keyframes: [
+                    { boxShadow: '0 0 20px rgba(79, 195, 247, 0.3)' },
+                    { boxShadow: '0 0 60px rgba(79, 195, 247, 0.8)' },
+                    { boxShadow: '0 0 20px rgba(79, 195, 247, 0.3)' }
+                ],
+                options: { 
+                    duration: 2000,
+                    easing: 'easeInOutSine',
+                    loop: true
+                }
+            },
+            pulse: {
+                keyframes: [
+                    { transform: 'scale(1)', boxShadow: '0 0 20px rgba(79, 195, 247, 0.3)' },
+                    { transform: 'scale(1.1)', boxShadow: '0 0 60px rgba(79, 195, 247, 0.6)' },
+                    { transform: 'scale(1)', boxShadow: '0 0 20px rgba(79, 195, 247, 0.3)' }
+                ],
+                options: { 
+                    duration: 1500,
+                    easing: 'easeInOutQuad',
+                    loop: true
+                }
+            },
+            flip: {
+                keyframes: [
+                    { transform: 'perspective(1000px) rotateY(0deg)' },
+                    { transform: 'perspective(1000px) rotateY(360deg)' }
+                ],
+                options: { 
+                    duration: 2000,
+                    easing: 'easeInOutQuad',
+                    loop: true
+                }
+            },
+            shake: {
+                keyframes: [
+                    { transform: 'translateX(0)' },
+                    { transform: 'translateX(-15px)' },
+                    { transform: 'translateX(15px)' },
+                    { transform: 'translateX(-10px)' },
+                    { transform: 'translateX(10px)' },
+                    { transform: 'translateX(-5px)' },
+                    { transform: 'translateX(5px)' },
+                    { transform: 'translateX(0)' }
+                ],
+                options: { 
+                    duration: 1000,
+                    easing: 'easeInOutQuad',
+                    loop: true
+                }
+            }
+        };
+
+        const commandText = document.querySelector('.command-text');
+        let currentCommandIndex = 0;
+
+        function updateCommand() {
+            const command = commands[currentCommandIndex];
+            commandText.innerHTML = '';
+            
+            // Split text into spans with proper spacing
+            command.split('').forEach((char, index) => {
+                const span = document.createElement('span');
+                span.textContent = char;
+                if (char === ' ') {
+                    span.classList.add('space');
+                }
+                commandText.appendChild(span);
+                
+                setTimeout(() => span.classList.add('visible'), 50 * index);
+            });
+
+            // Get animation name from command
+            const animationName = command.toLowerCase().split(' ')[2].replace('...', '');
+            const animation = animations[animationName];
+
+            // Apply animation to preview component
+            if (animation) {
+                anime.remove(previewComponent);
+                anime({
+                    targets: previewComponent,
+                    ...animation.keyframes[0],
+                    ...animation.options
+                });
+            }
+
+            // Move to next command
+            currentCommandIndex = (currentCommandIndex + 1) % commands.length;
+        }
+
+        // Start the command cycle with longer interval
+        updateCommand();
+        setInterval(updateCommand, 4000); // Increased to 4 seconds to better show each animation
+    </script>
+</body>
+</html> 
